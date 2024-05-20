@@ -1,0 +1,121 @@
+'use strict'
+
+class Stickmin
+{
+    x = 0;
+    y = 0;
+    stepSize = 1;
+    theta = 0;
+    strokeColor = 'black';
+    faceColor = 'yellow';
+    eyeColor = 'cyan';
+    scaleValue = 1;
+
+
+    constructor()
+    {
+    }
+
+    set strokeColor(newColor)
+    {
+        this.strokeColor = newColor;
+    }
+
+    set Positionx(newx)
+    {
+        this.x = newx;
+    }
+
+    set PositionY(newY)
+    {
+        this.y = newY;
+    }
+
+    get Positionx()
+    {
+        return this.x;
+    }
+
+    get PositionY()
+    {
+        return this.y;
+    }
+
+    set FaceColor(newColor)
+    {
+        this.faceColor = newColor;
+    }
+
+    set EyeColor(newColor)
+    {
+        this.eyeColor = newColor;
+    }
+
+    set ScaleValue(newScale)
+    {
+        this.scaleValue = newScale;
+    }
+
+    get ScaleValue()
+    {
+        return this.scaleValue;
+    }
+
+    Right(addValue)
+    {
+        this.theta = this.theta - addValue;
+    }
+
+    Left(addValue)
+    {
+        this.theta = this.theta + addValue;
+    }
+
+    Display(ctx)
+    {
+        ctx.save();
+        ctx.translate(this.x,this.y);
+        ctx.rotate(this.theta*CF);
+    //    ctx.rotate(-90*CF);
+
+        ctx.scale(this.scaleValue, this.scaleValue);
+
+        ctx.strokeStyle = this.strokeColor;
+        ctx.fillStyle = this.faceColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+
+        ctx.moveTo(0,0);
+        ctx.lineTo(0, -50);
+        ctx.moveTo(0,0);
+        ctx.lineTo(15, 40);
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-15, 40);
+        ctx.moveTo(25, -25);
+        ctx.lineTo(-25, -25);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(0,-50,15,0, 2*Math.PI);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = this.eyeColor;
+
+        ctx.beginPath();
+        ctx.arc(5, -53, 2.5, 0, 2*Math.PI);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(-5, -53, 2.5, 0, 2*Math.PI);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(0, -47, 7, .1*Math.PI, .9*Math.PI);
+        ctx.stroke();
+
+        ctx.restore();
+    }
+}

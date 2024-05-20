@@ -1,0 +1,221 @@
+"use strict"
+
+class Squares {
+   squares = [];
+   all = [];
+
+   constructor (canvasName, space = 10, count = 100, radius = 50) {
+       this.canvas = document.getElementById(canvasName);
+       this.ctx = this.canvas.getContext('2d');
+
+       let cWidth = this.canvas.width;
+       let cHeight = this.canvas.height;
+
+       this.count = count;
+       this.minSpace = space;
+//       this.radius = radius;
+
+       var i = 0;
+       var attempt = 0;
+       let x1, y1
+       let x2, y2;
+       let w, h; 
+
+       while (i < this.count && attempt < 1000) {
+           // generate width and height first.           
+           w = Math.floor(Math.random()*(radius) + 20);
+           h = Math.floor(Math.random()*(radius) + 20);
+
+           // then the position
+           x1 = 1 * space + Math.floor(Math.random()*(cWidth - w -  space)); 
+           y1 = 2 * space + Math.floor(Math.random()*(cHeight - h - 5 * space)); 
+
+           // other end positions
+           x2 = x1 + w;
+           y2 = y1 + h;
+
+           if (this.Safe([x1-space,y1-space,x2+space,y2+space,w,h])) {
+              this.squares.push([x1,y1,x2,y2,w,h]);
+              i++;
+           } else {
+              attempt++;
+           }
+       }
+
+       this.Display();
+    }
+
+   get Radius() {
+      return this.radius;
+   }
+
+   Display() {
+       var i;
+
+       for(i = 0; i< this.squares.length; i++) 
+       {
+           this.ctx.beginPath();
+           this.ctx.fillStyle = "blue";
+           this.ctx.strokeStyle = "black";
+           
+           this.ctx.rect(this.squares[i][0], this.squares[i][1], 
+                     this.squares[i][4], this.squares[i][5]);
+           this.ctx.fill();
+           
+           this.ctx.rect(this.squares[i][0], this.squares[i][1], 
+                     this.squares[i][4], this.squares[i][5]);
+           this.ctx.stroke();
+       }
+       return;
+   }
+
+   Between(small, large, pt){
+      return ( small <= pt && pt <= large);
+   }
+
+   Inside(x,y, a) {
+      let x0 = a[0];
+      let y0 = a[1];
+      let x1 = a[2];
+      let y1 = a[3];
+
+      let insideX = this.Between(x0, x1, x);
+      let insideY = this.Between(y0, y1, y);
+      return (insideX && insideY);
+   }
+
+   PointInside(a,b) {
+
+       let x0 = a[0];
+       let y0 = a[1];
+       let x1 = a[2];
+       let y1 = a[3];
+
+       // x0, y0
+       if (this.Inside(x0, y0, b)) {
+          return true;
+       } 
+
+       // x1, y0
+       if (this.Inside(x1, y0, b)) {
+          return true;
+       } 
+
+       // x0, y1
+       if (this.Inside(x0, y1, b)) {
+          return true;
+       } 
+
+       // x1, y1
+       if (this.Inside(x1,y1, b)) {
+          return true;
+       } 
+
+       return false;
+   }
+
+   Overlap(a,b){
+       let h1 = this.Between(a[0],a[2], b[0]) || this.Between(a[0],a[2],b[2]);
+       let v1 = this.Between(b[1],b[3], a[1]) || this.Between(b[1],b[3],a[3]);
+
+       return h1 && v1;
+   }
+
+   Collide(a,b){
+      let pointInside =  this.PointInside(a,b) || this.PointInside(b,a);
+      let overlap =  this.Overlap(a,b) || this.Overlap(b,a);
+
+      return  pointInside || overlap;
+   }
+
+   Safe(ary) {
+      let i;
+      let ok = true;
+
+      for(i = 0; i < this.squares.length; i++) {
+         if ( this.Collide( ary, this.squares[i]) ) {
+            ok = false;
+         }
+      }
+      return ok;
+   }
+
+   Distance(x1, y1, x2, y2) {
+      let dx = x1 - x2;
+      let dy = y1 - y2;
+
+      return Math.sqrt(dx*dx + dy*dy);
+   }
+
+}
+//
+//function DrawScene(canvasName, circles, guy) {
+//     let canvas = document.getElementById(canvasName);
+//     let ctx = canvas.getContext('2d');
+//   
+//     ctx.clearRect(0,0,canvas.width, canvas.height);
+//
+//     circles.Display();
+//     guy.Draw();
+//
+//     return;
+//}
+//
+//function Crash(guy, boxes) {
+//    let guyRad = guy.Radius;
+//
+//    let x1, y1, x2, y2;
+//
+//    // find the bounding box "radius"
+//    let d = Math.floor(Math.sqrt(2)* guyRad);
+//
+//    let pos = guy.Pos;
+//   
+//    // compute the edges of the bounding box.
+//    x1 = guy.Pos[0] - d;
+//    y1 = guy.Pos[1] - d;
+//    x2 = guy.Pos[0] + d;
+//    y2 = guy.Pos[1] + d;
+//
+//    return !boxes.Safe([x1,y1,x2,y2])
+//}
+//
+//function MyHandler(evnt) {
+//   let pos;
+//
+//   pos = guy.Pos;
+//   let x = pos[0];
+//   let y = pos[1];
+//
+//   switch(evnt.key) {
+//      case 'w':
+//      case 'k':
+//      case "ArrowUp":
+//         pos[1]--;
+//         break;
+//      case 's':
+//      case 'j':
+//      case "ArrowDown":
+//         pos[1]++;
+//         break;
+//      case 'a':
+//      case 'h':
+//      case "ArrowLeft":
+//         pos[0]--;
+//         break;
+//      case 'd':
+//      case 'l':
+//      case "ArrowRight":
+//         pos[0]++;
+//         break;
+//   }
+//
+//   guy.Pos = pos;
+//
+//   if (Crash(guy, columns))  {
+//       guy.Pos = [x,y];
+//   } else {
+//       DrawScene("squareMove", columns, guy);
+//   }
+//   return;
+//}

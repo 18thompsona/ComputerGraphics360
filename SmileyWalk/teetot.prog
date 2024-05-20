@@ -1,0 +1,152 @@
+'use strict'
+
+
+
+class TeeTot
+{
+    toterL = new Stickmin
+    toterR = new Stickmin
+    x = 0;
+    y = 0;
+    theta = 0;
+    totTheta = 0;
+    totDelta = 1;
+    centerColor = 'purple';
+    scaleValue = 1;
+
+    constructor()
+    {
+        this.Positionx(this.toterL.x);
+        this.PositionY(this.toterL.y);
+    }
+
+    strokeColor(newColor)
+    {
+        this.strokeColor = newColor;
+    }
+
+    Positionx(newx)
+    {
+        this.x = newx;
+        
+        this.toterL.x = newx - (90 * this.toterR.scaleValue);
+        this.toterR.x = newx + (90 * this.toterR.scaleValue);
+    }
+
+    PositionY(newy)
+    {
+        this.y = newy;
+        
+        this.toterL.y = newy - (5 * this.toterR.scaleValue);
+        this.toterR.y = newy - (5 * this.toterR.scaleValue);
+    }
+
+    CustomizeTetters(rightFaceColor = 'yellow', leftFaceColor = 'yellow', rightEyeColor = 'cyan',                            leftEyeColor = 'cyan')
+    {
+        this.toterL.FaceColor = rightFaceColor;
+        this.toterL.EyeColor = rightEyeColor;
+        
+        this.toterR.FaceColor = leftFaceColor;
+        this.toterR.EyeColor = leftEyeColor;
+    }
+
+    //Scale Before Position
+    ScaleValue(newScale)
+    {
+        this.scaleValue = newScale;
+        
+        this.toterL.scaleValue = newScale;
+        this.toterR.scaleValue = newScale;
+        
+        this.Positionx(this.toterL.x);
+        this.PositionY(this.toterL.y);
+    }
+    
+    Display(ctx)
+    {
+        ctx.save();
+        ctx.translate(this.x,this.y);
+        ctx.rotate(this.theta*CF);
+        ctx.scale(this.scaleValue, this.scaleValue);
+
+        ctx.strokeStyle = this.strokeColor;
+        ctx.fillStyle = this.centerColor;
+        ctx.lineWidth = 2;
+        
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-30, 50);
+        ctx.lineTo(30, 50);
+        ctx.lineTo(0, 0);
+        ctx.lineTo(30, 50);
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.rotate(this.totTheta*CF);
+        
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(120, 0);
+        ctx.lineTo(-120, 0);
+        ctx.stroke();
+        
+        ctx.translate(this.x,this.y);
+            
+        this.toterL.Display(ctx);
+        this.toterR.Display(ctx);
+ 
+        ctx.restore();
+    }
+
+    Next()
+    {
+        if(this.totTheta >= 15)
+        {
+            this.totDelta = -1;
+        }
+        else if (this.totTheta <= -15)
+        {
+            this.totDelta = 1;    
+        }
+        
+        this.totTheta += this.totDelta;
+        
+        if(this.totDelta == 1)
+        {
+            this.toterL.Right(1);
+            this.toterR.Right(1);
+        }
+        else
+        {
+            this.toterL.Left(1);
+            this.toterR.Left(1);
+        }  
+    }
+
+//Testing Methods
+    TotRight()
+    {
+        this.totTheta++;
+        
+        this.toterL.x = this.toterL.x + (.3 * this.scaleValue);
+        this.toterL.y = this.toterL.y - (1.6 * this.scaleValue);
+        this.toterL.Left();
+        
+        this.toterR.x = toterR.x - (.15 * this.scaleValue);
+        this.toterR.y = toterR.y + (1.5 * this.scaleValue);
+        this.toterR.Left();
+    }
+
+    TotLeft()
+    {
+        this.totTheta--;
+        
+        this.toterL.x = this.toterL.x - (.15 * this.scaleValue);
+        this.toterL.y = this.toterL.y + (1.6 * this.scaleValue);
+        this.toterL.Right();
+        
+        this.toterR.x = this.toterR.x + (.1 * this.scaleValue);
+        this.toterR.y = this.toterR.y - (1.7 * this.scaleValue);
+        this.toterR.Right();
+    }
+}

@@ -1,0 +1,271 @@
+'use strict'
+
+let base;
+let fence;
+let starAmount = 200;
+let stars = [];
+let starsx = [];
+let starsy = [];
+let starsScale = [];
+let house1;
+let house2;
+let couple;
+let couple2;
+let teetot;
+let teetot2;
+let swing;
+let swing2;
+
+let timer = null;
+let timerbool = false;
+
+let canvas;
+let ctx;
+let canvasWidth;
+let width;
+let height;
+let worldx = 0;
+let worldy = 0;
+let worldScale = 1;
+let skyfill = 'grey';
+let landfill = 'green';
+
+const CF = Math.PI/180;
+
+function Setup(CanvasName)
+{
+    canvas = document.getElementById(CanvasName);
+    ctx = canvas.getContext('2d');
+    canvasWidth = canvas.width;
+    width = canvas.width * 6;
+    height = canvas.height;
+    worldScale = canvasWidth / 500;
+    canvas.tabIndex = 0;
+    canvas.addEventListener("keydown", MyHandler);
+    
+    base = new Stickmin;
+    fence = new Fence;
+    house1 = new House;
+    house2 = new House;
+    couple = new Couple;
+    couple2 = new Couple;
+    teetot = new TeeTot;
+    teetot2 = new TeeTot;
+    swing = new Swing;
+    swing2 = new Swing; 
+    
+    GenerateStars();
+    
+    //Customizations to the actors
+    fence.FenceSegments = (width + width/worldScale)/ 60; 
+    house2.HouseColor = 'red';
+    house2.RoofColor = 'Grey';
+    
+    couple.CustomizeCouple('pink', 'blue');
+    couple2.CustomizeCouple('coral', 'plum', 'greenyellow', 'burlywood');
+    
+    teetot.CustomizeTetters('skyblue', 'mediumslateblue');
+    teetot2.CustomizeTetters('springgreen');
+    
+    swing.CustomizeSwinger('gold', 'snow');
+    
+    timer = setInterval(DrawScene, 20);
+    timerbool = true;
+    
+    DrawScene();
+}
+
+function MyHandler(evnt)
+{
+    let key = evnt.key;
+    switch (key)
+    {
+        case 'q':
+            if(timerbool == false)
+            {
+                timer = setInterval(DrawScene, 20);
+                timerbool = true;
+            }
+            else
+            {
+                clearInterval(timer);
+                timerbool = false;
+            }
+            break;
+        
+        case 'a':
+        case 'j':
+            Worldx(50);
+            break;
+            
+        case 'd':
+        case 'l':
+            Worldx(-50);
+            break;
+    }
+    
+    if (timerbool == false)
+    {
+        DrawScene();
+    }         
+}
+
+function Worldx(modValue)
+{
+    worldx += modValue;
+    worldx = Math.min(worldx, 0);
+    worldx = Math.max(worldx , -width)
+//    console.log(worldx);
+}
+
+
+function DrawScene()
+{
+    ctx.clearRect(0,0, width, height);
+    
+    ctx.beginPath();
+    ctx.fillStyle = skyfill;
+    ctx.rect(0, 0, canvasWidth, height);
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.fillStyle = landfill;
+    ctx.rect(0, height/2.9, canvasWidth, height);
+    ctx.fill();
+    
+    ctx.save();
+    
+    // user movement
+    ctx.scale(worldScale, worldScale);
+    ctx.translate(worldx, worldy);
+
+    SceneObjects();
+    
+    ctx.restore();
+ 
+    ctx.save();
+    ctx.scale(worldScale,worldScale);
+    StickDraw(base, 1.25, 250, 420);
+    ctx.restore();
+}
+
+function SceneObjects(ctx)
+{    
+    for(let i = 0; i < starAmount; i++)
+    {
+        StarDraw(stars[i], starsScale[i], starsx[i], starsy[i]);
+    }
+    
+    FenceDraw(fence, .5, 0, 150);
+    
+    TeeterTotterDraw(teetot, 1, 2200 * worldScale, 250);
+    
+    SwingDraw(swing, 1, 2000 * worldScale, 72);
+    SwingDraw(swing2, 1, 1070 * worldScale, 42);
+    
+    TeeterTotterDraw(teetot2, 1, 860 * worldScale, 333);
+    
+    CoupleDraw(couple, 1, 1500 * worldScale, 290);
+    CoupleDraw(couple2, 1, 2700 * worldScale, 250);
+    
+    HouseDraw(house1, 1, 10, 475, 1);
+    HouseDraw(house2, 1, (3000 * worldScale) + 300, 475, 2);
+}
+
+
+//Fraw fuctions for reusablity
+function TeeterTotterDraw(theTotter, scaleValue, inx, iny)
+{
+    ctx.save();
+    ctx.translate(inx, iny);
+    ctx.scale(scaleValue, scaleValue);
+    if(timerbool)
+    {
+        theTotter.Next();
+    }
+    theTotter.Display(ctx);
+    ctx.restore();
+}
+
+function SwingDraw(theSwing, scaleValue, inx, iny)
+{
+    ctx.save();
+    ctx.translate(inx, iny);
+    ctx.scale(scaleValue, scaleValue);
+    if(timerbool)
+    {
+        theSwing.Next();
+    }
+    theSwing.Display(ctx);
+    ctx.restore();
+}
+
+function CoupleDraw(theCouple, scaleValue, inx, iny)
+{
+    ctx.save();
+    ctx.translate(inx, iny);
+    ctx.scale(scaleValue, scaleValue);
+    if(timerbool)
+    {
+        theCouple.Next();
+    }
+    theCouple.Display(ctx);
+    ctx.restore();
+}
+
+function StarDraw(theStar, scaleValue, inx, iny)
+{
+    ctx.save();
+    ctx.translate(inx, iny);
+    ctx.scale(scaleValue, scaleValue);
+    if(timerbool)
+    {
+        theStar.Next();
+    }
+    theStar.Display(ctx);
+    ctx.restore();
+}
+
+function HouseDraw(theHouse, scaleValue, inx, iny, whichHome)
+{
+    ctx.save();
+    ctx.translate(inx, iny);
+    ctx.scale(scaleValue, scaleValue);
+    theHouse.Display(ctx, whichHome);
+    ctx.restore();
+}
+
+function FenceDraw(theFence, scaleValue, inx, iny)
+{
+    ctx.save();
+    ctx.translate(inx, iny);
+    ctx.scale(scaleValue, scaleValue);
+    theFence.Display(ctx,);
+    ctx.restore();
+}
+
+function StickDraw(theStick, scaleValue, inx, iny)
+{
+    ctx.save();
+    ctx.translate(inx, iny);
+    ctx.scale(scaleValue, scaleValue);
+    theStick.Display(ctx,);
+    ctx.restore();
+}
+
+function GenerateStars()
+{
+    let i = 0;
+    let x = 0, y = 0;
+    for(i; i < starAmount; i++)
+    {
+        x = Math.floor(Math.random()*(width + canvasWidth/worldScale));
+        y = Math.floor(Math.random()*(height/3.5 / worldScale));
+        console.log(y);
+        starsx[i] = x;
+        starsy[i] = y;
+        stars[i] = new Star;
+        starsScale[i] = Math.random() * 1 + .2 ;
+        stars[i].spinAmount = Math.random() * 5 - 2.5;
+    }      
+}

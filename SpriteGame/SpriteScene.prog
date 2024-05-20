@@ -1,0 +1,280 @@
+'use strict'
+
+let character, enemy, walls, treasure1, treasure2;
+let score1 = 0, score2 = 0;
+
+//Sets up the the canvas for the game and the first move
+function Setup(canvasName)
+{
+    character = new Sprite(canvasName, 'WalkRight.png', 32, 45, 4);
+    enemy = new Sprite(canvasName, 'WalkRightEnemy.png', 32, 45, 4);
+    
+    let canvas = document.getElementById(canvasName);
+    let ctx = canvas.getContext("2d");
+    ctx.fillStyle = 'LightBlue';
+    ctx.fillRect(canvas.width - canvas.width/5, canvas.height - canvas.height/5,
+                 canvas.width, canvas.height);
+    
+    let cx = (canvas.width / 2) - 32;
+    let cy = (canvas.height / 2) - 45;
+    
+    character.Position = {x:canvas.width/20, y:canvas.height/20};
+//    enemy.Position = {x:canvas.width/10, y:canvas.height/10};
+    enemy.Position = {x:canvas.width - canvas.width/4, y:canvas.height - canvas.height/4};
+    
+    walls = new Squares(canvasName, 60, 100, 100);
+    treasure1 = new Treasure(canvasName, 100, 5, 'Crown.png', 16, 16);
+    
+    let i = 0;
+    
+    //Treasures not allowed to be in wall
+    for(i = 0; i < TreasureData(1).length; i++)
+    {
+        let attempts = 0;
+        while(!walls.Safe(TreasureLocation(1, i)) && attempts < 1000) 
+        {
+            treasure1.RemoveTreasure(i);
+            treasure1.NewTreasure(i);
+            attempts++;
+        }
+    }
+    
+    //Treasures not allowed to be in the wall or other treasure
+    treasure2 = new Treasure(canvasName, 100, 5, 'Goblet.png', 16, 16);
+    for(i = 0; i < TreasureData(2).length; i++)
+    {
+        let attempts = 0;
+        while(!walls.Safe((TreasureLocation(2, i)) || treasure1.Safe((TreasureLocation(2, i)))) && attempts < 1000)
+        {
+            treasure2.RemoveTreasure(i);
+            treasure2.NewTreasure(i);
+            attempts++;
+        }
+    }
+    
+    walls.Display();
+    ScoreBoard(canvasName);
+}
+
+//Handles movement and all the events that it handles. Needs the name of the canvas and movement of the character
+function StartMove(dx, dy, canvasName)
+{
+    let steps = 4;
+    
+    let enemyx = Math.floor((Math.random() * 3) - 1);
+    let enemyy = Math.floor((Math.random() * 3) - 1);
+    
+    if (!WallCrash(dx, dy, character))
+    {
+        character.Move(dx ,dy, steps)
+    }
+    if (!WallCrash(enemyx, enemyy, enemy))
+    {
+        enemy.Move(enemyx, enemyy, steps, "Enemy");
+    }
+    
+    if (TreasureCrash(dx, dy, character, 1))
+    {
+        treasure1.Interacted(PositionData(dx, dy, character));
+        score1++;
+
+            for(let i = 0; i < TreasureData(1).length; i++)
+        {
+            let attempts = 0;
+            while(!walls.Safe(TreasureLocation(1, i)) && attempts < 1000) 
+            {
+    //            console.log('wrong');
+                treasure1.RemoveTreasure(i);
+                treasure1.NewTreasure(i);
+                attempts++;
+            }
+        }
+    }
+    
+    if (TreasureCrash(dx, dy, character, 2))
+    {
+        treasure2.Interacted(PositionData(dx, dy, character));
+        score2++;
+        
+            for(let i = 0; i < TreasureData(2).length; i++)
+        {
+            let attempts = 0;
+            while(!walls.Safe((TreasureLocation(2, i)) || !treasure1.Safe((TreasureLocation(2, i)))) && attempts < 1000)
+            {
+                treasure2.RemoveTreasure(i);
+                treasure2.NewTreasure(i);
+                attempts++;
+            }
+        }
+    }
+    
+    if (!enemy.Safe(PositionData(dx, dy, character), 5))
+    {
+        console.log('jfkdasl');
+        if (Math.floor((Math.random() * 3) - 1) < 1)
+        {
+            if (score1 != 0)
+            {
+                score1 = 0;
+//            score1 = Math.max(score1, 0);
+            }
+            else
+            {
+                score2 = 0;        
+            }
+        }
+        else
+        {
+            if (score2 != 0)
+            {
+                score2 = 0;
+//            score1 = Math.max(score2, 0);
+            }
+            else
+            {
+                score1 = 0;        
+            }
+        }
+    }
+
+    EndZone(canvasName);
+    ScoreBoard(canvasName);
+    walls.Display();
+    treasure1.Redraw();
+    treasure2.Redraw();
+    
+    if (IsGameOver(canvasName))
+    {
+        GameOver(canvasName);
+    }
+}
+
+//Stops the game
+function GameOver(canvasName)
+{
+    character.StopMovement = true;
+    enemy.StopMovement = true;
+    
+    let canvas = document.getElementById(canvasName);
+    let ctx = canvas.getContext("2d");
+    
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 5;
+    ctx.font = Math.min(canvas.width / 10, canvas.height / 10) + 'px Trebuchet MS';
+    
+    let displace = ctx.measureText("GameOver...");
+    ctx.strokeText("GameOver...", (canvas.width / 2) - (displace.width / 2), 
+                   (canvas.height / 2) - (displace.actualBoundingBoxAscent / 2))    
+}
+
+//Stop game checker
+function IsGameOver(canvasName)
+{
+    let canvas = document.getElementById(canvasName);
+    let location = character.Position;
+    let bool = ((location.x >= canvas.width - canvas.width/5) && (location.y >= canvas.height - canvas.height/5));
+    
+    return bool;
+}
+
+//Endzone drawer
+function EndZone(canvasName)
+{
+    let canvas = document.getElementById(canvasName);
+    let ctx = canvas.getContext("2d");
+    ctx.fillStyle = 'LightBlue';
+    ctx.fillRect(canvas.width - canvas.width/5, canvas.height - canvas.height/5,
+                 canvas.width, canvas.height);
+}
+
+function WallCrash(dx, dy, user) 
+{
+    return !walls.Safe(PositionData(dx, dy, user));
+}
+
+
+//which treasure should be 1 for the first, 2 for second
+function TreasureCrash(dx, dy, user, whichTreasure)
+{
+    let x1, y1, x2, y2;
+    let returner = false;
+    
+    if (whichTreasure == 1)
+    {
+        returner = !treasure1.Safe(PositionData(dx, dy, user));
+    }
+    else if (whichTreasure == 2)
+    {
+        returner = !treasure2.Safe(PositionData(dx, dy, user))
+    }
+    
+    return returner;
+}
+
+//Get the players move to location for safe
+function PositionData(dx, dy, user)
+{
+    let x1, y1, x2, y2;
+
+    x1 = (user.Position.x + (dx*12) - 1);
+    y1 = (user.Position.y + (dy*12) - 2);
+    x2 = (user.Position.x + 32 + (dx*12) + 1);
+    y2 = (user.Position.y + 45 + (dy*12) + 2);
+    
+    return [x1,y1,x2,y2];
+}
+
+//gets copy of treasureLocation
+function TreasureData(whichTreasure)
+{
+    let holder;
+    
+    if(whichTreasure == 1)
+    {
+        holder = treasure1.TreasureLocation;
+    }
+    else if(whichTreasure == 2)
+    {
+        holder = treasure2.TreasureLocation;
+    }
+    
+    return holder;
+}
+
+//Gets location array for safe of specified treasure
+function TreasureLocation(whichTreasure, i = 0)
+{
+    let holder = [];
+    let returner = [];
+    if(whichTreasure == 1)
+    {
+        holder = TreasureData(1);
+        returner = [holder[i][0], holder[i][1], holder[i][2], holder[i][3]];
+    }
+    else if(whichTreasure == 2)
+    {
+        holder = TreasureData(2);
+        returner = [holder[i][0], holder[i][1], holder[i][2], holder[i][3]];
+    }
+    
+    return returner;
+}
+
+//Dysplays the score
+function ScoreBoard(canvasName)
+{
+    let canvas = document.getElementById(canvasName);
+    let ctx = canvas.getContext("2d");
+    
+    ctx.strokeStyle = "black";
+    ctx.font = Math.min(canvas.width / 20, canvas.height / 20) + 'px Trebuchet MS';
+    
+    let scoreText = "CROWNS - " + score1 + " GOBLETS - " + score2;
+    let displace = ctx.measureText(scoreText);
+    
+    ctx.clearRect(canvas.width - displace.width, 0, displace.width,  displace.actualBoundingBoxAscent + 2);
+    ctx.strokeText(scoreText, canvas.width - displace.width, displace.actualBoundingBoxAscent);
+}
+
+//https://opengameart.org/content/fantasy-rpg-npcs - for character
+//https://opengameart.org/content/gold-treasure-icons-16x16 - treasures

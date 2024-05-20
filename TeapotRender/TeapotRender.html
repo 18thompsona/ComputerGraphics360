@@ -1,0 +1,348 @@
+<html>
+    
+    <head>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+precision mediump float;
+
+attribute vec4 attributePosition;
+attribute float attributeBC;
+
+attribute vec4 vertexColor;
+
+uniform mat4 uniformTransform;
+uniform mat4 uniformProject;
+
+uniform float shadeSelect;
+
+varying vec3 varyingBC;
+
+varying vec4 faceColor;
+varying vec4 backColor;
+varying vec4 edgeColor;
+
+
+void main() 
+{
+    gl_Position = uniformProject * uniformTransform *  attributePosition;
+
+    if (attributeBC == 0.0) 
+    {
+        varyingBC = vec3(1.0, 0.0, 0.0);
+    }
+    else if (attributeBC == 1.0) 
+    {
+        varyingBC = vec3(0.0, 1.0, 0.0);
+    } 
+    else 
+    {
+        varyingBC = vec3(0.0, 0.0, 1.0);
+    }
+    
+        //Center
+    if (shadeSelect == 1.0)
+    {
+        faceColor = vertexColor;
+        backColor = vec4(0.0, 1.0, 0.0, 0.05);
+        edgeColor = vec4(1.0, 0.0, 0.0, 1.0);
+    }
+        //Upper Left
+    else if (shadeSelect == 2.0)
+    {
+        faceColor = vertexColor;
+        backColor = vertexColor;
+        edgeColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+        //Lower Left
+    else if (shadeSelect == 3.0)
+    {
+        faceColor = vertexColor;
+        backColor = vec4(0.0, 1.0, 0.0, 1.0);
+        edgeColor = vec4(1.0, 0.0, 0.0, 1.0);
+    }
+        //Upper Right
+    else if (shadeSelect == 4.0)
+    {
+        faceColor = vertexColor;
+        backColor = vec4(0.0, 1.0, 0.0, 0.0);
+        edgeColor = vec4(1.0, 1.0, 1.0, 1.0);
+    }
+        //Lower Right
+    else if (shadeSelect == 5.0)
+    {
+        faceColor = vertexColor;
+        backColor = vec4(1.0, 1.0, 0.0, 1.0);
+        edgeColor = vec4(0.8, 0.4, 0.8, 1.0);
+    }
+        //Failure
+    else
+    {
+        faceColor = vec4(1.0, 0.0, 0.0, 1.0);
+        backColor = vec4(1.0, 0.0, 0.0, 1.0);
+        edgeColor = vec4(0.0, 1.0, 1.0, 1.0);
+    }
+    
+    
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+    precision mediump float;
+    
+    varying vec3 varyingBC;
+    
+    varying vec4 faceColor;
+    varying vec4 backColor;
+    varying vec4 edgeColor;
+    
+    //Center
+    // wireframe shader
+    void Shader1()
+    {
+        // front face
+       if (gl_FrontFacing) 
+       {  
+            if (any(lessThan(varyingBC, vec3(0.03))))
+            { 
+                gl_FragColor= edgeColor;            //Edges
+            } 
+            else 
+            {
+                gl_FragColor= faceColor;            //Faces
+            }  
+       } 
+        // back facing
+       else 
+       {
+           if (any(lessThan(varyingBC, vec3(0.04)))) 
+           {
+               gl_FragColor = edgeColor;
+	       } 
+           else 
+           {    
+               gl_FragColor = backColor;
+	       }
+       }
+    }
+    
+    
+    void main()
+    {    
+            Shader1();
+    }
+    
+    
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+
+<script type="text/javascript" src="../Common/teapot.js"></script>
+
+<script type="text/javascript" src="GLCanvas.prog"></script>
+<script type="text/javascript" src="Widget.prog"></script>
+<script type="text/javascript" src="Wrapper.prog"></script>
+
+</head>
+
+<body>
+     <h1>TeapotRender - Alexander Thompson</h1>
+    
+<script>
+    var canvas = new Canvas(500, 500, Keypress);
+    
+    var timer = setInterval(Tick, 30);
+
+    var teapot = new Widget(canvas.GL(), canvas.Program(), Teapot_Triangles);
+    var CenterObject = new CubeObj(canvas.GL(), canvas.Program(), teapot);
+    var TopRightObject = new CubeObj(canvas.GL(), canvas.Program(), teapot);
+    var TopLeftObject = new CubeObj(canvas.GL(), canvas.Program(), teapot);
+    var BottomRightObject = new CubeObj(canvas.GL(), canvas.Program(), teapot);
+    var BottomLeftObject = new CubeObj(canvas.GL(), canvas.Program(), teapot);
+    
+// set up this teapot
+    CenterObject.Translate(0, 0, 1);
+    CenterObject.Rotate(-90, 0, 0);
+    CenterObject.SetShader(1);
+    
+    TopRightObject.Translate(-.6, .6, 1);
+    TopRightObject.Rotate(-90, 0, 0);
+    TopRightObject.Scale(-.5);
+    TopRightObject.SetShader(4);
+    
+    TopLeftObject.Translate(.6, .6, 1);
+    TopLeftObject.Rotate(-90, 0, 0);
+    TopLeftObject.Scale(-.5);
+    TopLeftObject.SetShader(2);
+    
+    BottomRightObject.Translate(-.6, -.6, 1);
+    BottomRightObject.Rotate(-90, 0, 0);
+    BottomRightObject.Scale(-.5);
+    BottomRightObject.SetShader(5);
+     
+    BottomLeftObject.Translate(.6, -.6, 1);
+    BottomLeftObject.Rotate(-90, 0, 0);
+    BottomLeftObject.Scale(-.5);
+    BottomLeftObject.SetShader(3);
+    
+    function Keypress(evnt) 
+    {
+        switch(evnt.key) 
+        {
+            case 'x': CenterObject.Rotate(1,0,0); break;
+            case 'y': CenterObject.Rotate(0,1,0); break;
+            case 'z': CenterObject.Rotate(0,0,1); break;
+            case 'X': CenterObject.Rotate(-1,0,0); break;
+            case 'Y': CenterObject.Rotate(0,-1,0); break;
+            case 'Z': CenterObject.Rotate(0,0,-1); break;
+            case '+': CenterObject.Scale(.1); break;
+            case '-': CenterObject.Scale(-.1); break;
+            case 'r':
+            case 'R': canvas.ResetView();
+       }
+
+       Redisplay();
+    }
+
+    function Redisplay() 
+    {
+        canvas.Clear();
+        
+        CenterObject.Display(canvas.GL(), canvas.Translate());
+        
+        TopRightObject.Display(canvas.GL(), canvas.Translate());
+        
+        TopLeftObject.Display(canvas.GL(), canvas.Translate());
+        
+        BottomRightObject.Display(canvas.GL(), canvas.Translate());
+
+        BottomLeftObject.Display(canvas.GL(), canvas.Translate());
+    }
+    
+    function Tick()
+    {
+        topLeftDelta = .5;    //Y Spin
+        topRightDelta = .5;    //Z Spin
+        bottomLeftDelta = .5;  //X Spin
+        
+        if (BottomRightObject.Sx >= 1.0)
+        {
+            bottomRightDelta = -.005;
+        }
+        else if (BottomRightObject.Sx <= .5)
+        {
+            bottomRightDelta = .005;    
+        }
+        
+        BottomLeftObject.Rotate(bottomLeftDelta, 0, 0);
+        TopLeftObject.Rotate(0, topLeftDelta, 0);
+        TopRightObject.Rotate(0, 0, topRightDelta);
+        BottomRightObject.Scale(bottomRightDelta);
+        
+        Redisplay();
+    }
+    
+    canvas.ResetView();
+    Redisplay();
+    
+    function ChangeFrustum()
+    {
+        width = document.getElementById("width");
+        height = document.getElementById("height");
+        near = document.getElementById("near");
+        far = document.getElementById("far");
+        
+        let w = parseFloat(width.value);
+        let h = parseFloat(height.value);
+        
+        let n = AdjustNear(parseFloat(near.value));
+        let f = AdjustFar(n, parseFloat(far.value));
+        
+        let newfrust = [-w/2, w/2, -h/2, h/2, n, f];
+        
+        console.log(n);
+        console.log(f);
+        
+        canvas.NewView(newfrust, zoom.value);
+        
+        Redisplay();
+    }
+    
+    function ChangeZoom()
+    {
+        zoom = document.getElementById('slider');
+        
+        let w = parseFloat(width.value);
+        let h = parseFloat(height.value);
+        
+        let n = AdjustNear(parseFloat(near.value));
+        let f = AdjustFar(n, parseFloat(far.value));
+        
+        let newfrust = [-w/2, w/2, -h/2, h/2, n, f];
+        
+        canvas.NewView(newfrust, zoom.value);
+        
+        Redisplay();
+    }
+    
+    function AdjustNear(n)
+    {
+        if(n < 0)
+        {
+            n = 0;
+        }
+        else if (n >= 10)
+        {
+            n = 9.9;
+        }
+        
+        return n;
+    }
+    
+    function AdjustFar(n, f)
+    {
+        if (f < n)
+        {
+            f = n + 1;
+        }
+        if (f >= 10)
+        {
+            f = 10;
+        }
+        
+        return f;
+    }
+    
+    var zoom;
+    var width, height, near, far;
+    
+    window.onload = function()
+    {
+        width = document.getElementById("width");
+        height = document.getElementById("height");
+        near = document.getElementById("near");
+        far = document.getElementById("far");
+        zoom = document.getElementById('slider');
+    }
+</script>
+    <br>Use the 'x', 'y', 'z' keys on your keyboard after clicking on the canvas to rotate the center teapot along the pressed axis!
+    <h3>Camera</h3>
+    -10
+    <input type="range" step="any" min="-10" max="-0.5" value="-1" class="slider" onclick="ChangeZoom()" id="slider">
+    -.5
+    
+    <h3>Frustum</h3>
+    Width:  <input type="number" step="any" name="width" id="width" value="1"><br>
+    Height: <input type="number" step="any" name="height" id="height" value="1"><br>
+    Near:   <input type="number" step="any" name="near" id="near" value="1"><br>
+    Far:    <input type="number" step="any" name="far" id="far" value="10"><br>
+    <br>
+    <button type="button" id="Redraw" onclick="ChangeFrustum()"> Change Frustum</button>
+            
+    
+    
+    
+
+</body></html>

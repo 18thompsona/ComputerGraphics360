@@ -1,0 +1,237 @@
+"use strict"
+
+const IMAGE_PATH = "img/";
+
+class Sprite{
+
+    //Player Constructor
+    constructor(canvasName, imageName = 'Player.png', width = 24, height = 30, frames = 8)
+    {
+        //Canvas To Use
+        this.ctx = document.getElementById(canvasName).getContext('2d');
+        this.image = document.createElement('img');
+        this.image.src = IMAGE_PATH + imageName;
+
+        this.canDraw = false;
+        this.gameEnd = false;
+
+        //Waiting for image loaded
+        this.image.addEventListener('load', this, false);
+
+        //charater size data
+        this.width = width;
+        this.height = height;
+        this.frames = frames;
+        this.cycle = 0; //Where in the frame rotation we are
+
+        //Canvas Location in use
+        this.x = 0;
+        this.y = 0;
+        this.oldx = 0;
+        this.oldy = 0;
+
+        //Locations in Movement
+        this.dx = 0;
+        this.dy = 0;
+        this.steps = 0;
+        this.isMoving = false;
+        this.timer = 0;
+
+        //Canvas Bounds
+        this.maxx = document.getElementById(canvasName).width;
+        this.maxy = document.getElementById(canvasName).height;
+
+        return;
+    }
+    
+    handleEvent(e)
+    {
+        this.canDraw = true;
+        this.Draw();
+
+        return;
+    }
+
+    get Position()
+    {
+        return {x:this.x, y:this.y};
+    }
+
+    set Position(pos)
+    {
+        this.x = pos.x;
+        this.y = pos.y;
+
+        return;
+    }
+
+    get Bounds()
+    {
+        return({width: this.width, height: this.height});
+    }
+
+
+    //Draws the character at current location
+    Draw()
+    {
+        if (this.canDraw)
+        {
+            //Clears rectangle character is in
+            this.ctx.clearRect(this.oldx, this.oldy, this.width, this.height);
+            this.oldx = this.x;
+            this.oldy = this.y;
+
+            this.ctx.drawImage(this.image, this.cycle*this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+
+            this.cycle = (this.cycle + 1) % this.frames;
+        }
+
+        return;
+    }
+
+    DoMove()
+    {
+        let x = this.x + this.dx;
+        let y = this.y + this.dy;
+
+        if ((x > 0 && (x + this.width) < this.maxx) && (y > 0  && (y + this.height < this.maxy)))
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        this.steps--;
+        this.Draw();
+
+        //If done; resets values for next move
+        if (this.steps <= 0)
+        {
+            this.canMove = false;
+            this.steps = 0;
+            this.dx = 0;
+            this.dx = 0;
+        }
+
+        //keeps it moving
+        else
+        {
+            this.timer = setTimeout(this.DoMove.bind(this), 100)
+        }
+
+    }
+
+    Move(dx, dy, steps = 100, ifEnemy = "")
+    {
+
+        if (!this.canMove && !this.gameEnd)
+        {
+            //Sets the Speed in which he move
+            this.dx = dx * 3;
+            this.dy = dy * 3;
+            this.steps = steps;
+            this.canMove = true;
+            
+            if(dx == -1)
+            {
+                this.image.src = IMAGE_PATH + "WalkLeft" + ifEnemy + ".png";
+            }
+            
+            else if(dx == 1)
+            {
+                this.image.src = IMAGE_PATH + "WalkRight" + ifEnemy + ".png";
+            }
+            
+            else if(dy == -1)
+            {
+                this.image.src = IMAGE_PATH + "WalkUp" + ifEnemy + ".png";
+            }
+            
+            else
+            {
+                this.image.src = IMAGE_PATH + "WalkDown" + ifEnemy + ".png";
+            }
+             
+            this.timer = setTimeout(this.DoMove.bind(this), 100);
+        }
+    } 
+    
+    set StopMovement (isEnd)
+    {
+        this.gameEnd = isEnd;
+    }
+    
+    Between(small, large, pt){
+      return ( small <= pt && pt <= large);
+   }
+
+   Inside(x,y, a) {
+      let x0 = a[0];
+      let y0 = a[1];
+      let x1 = a[2];
+      let y1 = a[3];
+
+      let insideX = this.Between(x0, x1, x);
+      let insideY = this.Between(y0, y1, y);
+      return (insideX && insideY);
+   }
+
+   PointInside(a,b) {
+
+       let x0 = a[0];
+       let y0 = a[1];
+       let x1 = a[2];
+       let y1 = a[3];
+
+       // x0, y0
+       if (this.Inside(x0, y0, b)) {
+          return true;
+       } 
+
+       // x1, y0
+       if (this.Inside(x1, y0, b)) {
+          return true;
+       } 
+
+       // x0, y1
+       if (this.Inside(x0, y1, b)) {
+          return true;
+       } 
+
+       // x1, y1
+       if (this.Inside(x1,y1, b)) {
+          return true;
+       } 
+
+       return false;
+   }
+
+   Overlap(a,b){
+       let h1 = this.Between(a[0],a[2], b[0]) || this.Between(a[0],a[2],b[2]);
+       let v1 = this.Between(b[1],b[3], a[1]) || this.Between(b[1],b[3],a[3]);
+
+       return h1 && v1;
+   }
+
+   Collide(a,b){
+      let pointInside =  this.PointInside(a,b) || this.PointInside(b,a);
+      let overlap =  this.Overlap(a,b) || this.Overlap(b,a);
+
+      return  pointInside || overlap;
+   }
+
+    //Modification: Shrink shrinks the hitbox, allowing for easier evasion
+   Safe(ary, shrink) {
+      let i;
+      let ok = true;
+      shrink = Math.min(shrink, 15);
+       
+//      console.log(this.x);
+      let filler = [this.x + shrink, this.y + shrink, this.x + this.width - shrink, this.y + this.height - shrink]
+
+      if (this.Collide(ary, filler)) 
+      {
+            ok = false;
+      }
+      return ok;
+   }
+}

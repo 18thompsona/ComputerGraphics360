@@ -1,0 +1,230 @@
+'use strict'
+
+class CubeObj 
+{
+    constructor (gl, program, widget) 
+    {
+        this.canvas = gl;
+        this.widget = widget;
+        this.program = program;
+        
+        this.Center = this.FindCenter(this.widget.TriangleArray());
+        
+        this.shadeLoc = gl.getUniformLocation(this.program, "shadeSelect");
+        this.whichShader = 1;
+        
+        this.Reset();
+        this.Transform();
+    }
+
+    Translate(x, y, z) 
+    {
+        this.tx = x;
+        this.ty = y;
+        this.tz = z;
+        this.Transform();
+    }
+    
+    Rotate(x, y, z)
+    {
+        this.rx += x;
+        this.ry += y;
+        this.rz += z;
+        this.Transform();
+    }
+
+    Scale(addScale)
+    {
+        this.sx += addScale;
+        this.sy += addScale;
+        this.sz += addScale;
+        this.Transform();
+    }
+    
+    Reset()
+    {
+        this.visible = true;
+        
+        this.rx = 0;
+        this.ry = 0;
+        this.rz = 0;
+        this.sx = 1;
+        this.sy = 1;
+        this.sz = 1;
+        this.tx = 0;
+        this.ty = 0;
+        this.tz = 0;
+    }
+
+    Display(gl, transLoc) 
+    {
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.widget.vVC);
+        gl.bufferData(gl.ARRAY_BUFFER, flatten(this.colors), gl.STATIC_DRAW);
+        
+        gl.uniform1f(this.shadeLoc, this.whichShader);
+        
+        if (this.visible)
+        {
+            this.widget.Display(gl, this.transform, transLoc);
+        }
+    }
+    
+    Transform() 
+    {
+        var tmp = translate(this.tx, this.ty, this.tz);
+        tmp = mult(tmp, scalem(this.sx, this.sy, this.sz));
+        tmp = mult(tmp, rotate(this.rz, [0,0,1]));
+        tmp = mult(tmp, rotate(this.ry, [0,1,0]));
+        tmp = mult(tmp, rotate(this.rx, [1,0,0]));
+        tmp = mult(tmp, translate(-this.Center[0], -this.Center[1], -this.Center[2]))
+
+	   this.transform = tmp;
+    }
+    
+    SetShader(whichShader)
+    {
+        this.whichShader = whichShader;
+        this.colors = [];
+        
+        switch (whichShader)
+        {
+            case 1:
+                for (let i = 0; i < this.widget.size; i++)
+                {
+                    this.colors.push([0.0, 0.0, 0.0, 1.0]);
+                }
+                break;
+                
+            case 2: 
+                let holderMap = new Map();
+                
+                for (let i = 0; i < this.widget.size; i++)
+                {
+                    if (holderMap.has(this.widget.triangleArray[i].toString()))
+                    {
+                        this.colors.push(holderMap.get(this.widget.triangleArray[i].toString()));
+                    }
+                    
+                    else
+                    {
+                        let value = [Math.random(), Math.random(), Math.random(), 1.0];
+                        holderMap.set(this.widget.triangleArray[i].toString(), value);
+                    }
+                }
+                break;
+                
+            case 3:
+                for (let i = 0; i < this.widget.size; i++)
+                {
+                    this.colors.push([1.0, 1.0, 0.0, 1.0]);
+                    
+                    if(this.widget.triangleArray[i][0] > 0)
+                    {
+                        this.colors[i][0] = 1.0;
+                    }
+                }
+                break;
+                
+            case 4:
+                for (let i = 0; i < this.widget.size; i++)
+                {
+                    this.colors.push([0.0, 0.0, 0.0, 1.0]);
+                    
+                    if (this.widget.triangleArray[i][0] > 0)
+                    {
+                        this.colors[i][0] = 1.0;
+                    }
+                    if (this.widget.triangleArray[i][1] > 0)
+                    {
+                        this.colors[i][1] = 1.0;
+                    }
+                    if (this.widget.triangleArray[i][2] > 0)
+                    {
+                        this.colors[i][2] = 1.0;
+                    }
+                }
+                break;
+            case 5:
+                for (let i = 0; i < this.widget.size; i++)
+                {
+                    this.colors.push([0.0, 0.0, 0.0, 1.0]);
+                    
+                    if(this.widget.triangleArray[i][2] < 0)
+                    {
+                        this.colors[i][0] = 1.0;
+                        this.colors[i][1] = 1.0;
+                    }
+                    if(this.widget.triangleArray[i][1] < 0)
+                    {
+                        this.colors[i][2] = 1.0;
+                    }
+                }
+                break;
+        }
+    }
+    
+    
+    
+    get Tx()
+    {
+        return this.tx;
+    }
+    
+    get Ty()
+    {
+        return this.ty;
+    }
+    
+    get Tz()
+    {
+        return this.tz;
+    }
+    
+    get Rx()
+    {
+        return this.rx;
+    }
+    
+    get Ry()
+    {
+        return this.ry;
+    }
+    
+    get Rz()
+    {
+        return this.rz;
+    }
+    
+    get Sx()
+    {
+        return this.sx;
+    }
+    
+    get Sy()
+    {
+        return this.sy;
+    }
+    
+    get Sz()
+    {
+        return this.sz;
+    }
+    
+    FindCenter(triangles)
+    {
+        var avergeValues = [0, 0, 0];
+        
+        for(let i = 0; i < triangles.length; i++)
+        {
+            avergeValues[0] += triangles[i][0];
+            avergeValues[1] += triangles[i][1];
+            avergeValues[2] += triangles[i][2];
+        }
+        
+        avergeValues[0] /= triangles.length;
+        avergeValues[1] /= triangles.length;
+        avergeValues[2] /= triangles.length;
+        
+        return avergeValues;
+    }
+}

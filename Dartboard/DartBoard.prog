@@ -1,0 +1,156 @@
+    "use strict"
+           
+    // Creates a slice using two angles and a desired radius on given canvas 
+    function Slice(cx, cy, a1, a2, r, canvasName)
+        {
+            let canvas = document.getElementById(canvasName);
+            let ctx = canvas.getContext("2d");
+            
+            let x,y;
+
+            ctx.beginPath();
+
+            ctx.arc(cx,cy, r, a1, a2, true);
+
+            x = cx+r*Math.cos(a2);
+            y = cy+r*Math.sin(a2);
+            ctx.moveTo(x, y);
+
+            ctx.lineTo(cx, cy);
+
+            x = cx+r*Math.cos(a1);
+            y = cy+r*Math.sin(a1);
+            
+            ctx.lineTo(x,y);
+
+            return;
+        }
+    
+    // creates wedges in a circle with given fill, stroke, and line size on given canvas
+    function Wedges(fillColor, strokeColor, sizeLine, spacer, wedgeRadius, canvasName)
+        {
+            let canvas = document.getElementById(canvasName);
+            let ctx = canvas.getContext("2d");
+            let canvasHeightY = canvas.height / 2;
+            let canvasWidthX = canvas.width / 2;
+            
+            ctx.fillStyle = fillColor;
+            ctx.lineWidth = sizeLine;
+            ctx.strokeStyle = strokeColor;
+        
+            //Finding angles for the circle using the given amount of space between each angle
+            let angleStart = spacer * Math.PI/10;
+            let angleEnd = (spacer - 1) * Math.PI/10;
+            
+            
+            //Works around the circle, spacer determines distances
+            while (spacer > -20)
+            {
+                Slice(canvasWidthX, canvasHeightY, angleStart, angleEnd, wedgeRadius, canvasName);
+                ctx.fill();
+
+                Slice(canvasWidthX, canvasHeightY, angleStart, angleEnd, wedgeRadius, canvasName);
+                ctx.stroke(); 
+
+                spacer -= 2;
+                angleStart = spacer * Math.PI/10;
+                angleEnd = (spacer - 1) * Math.PI/10;  
+            }   
+            return;
+        }
+    
+    //Creates a circle with given customizations on given canvas 
+    function Circles(fillColor, strokeColor, sizeLine, circleRadius, canvasName)
+        {
+            let canvas = document.getElementById(canvasName);
+            let ctx = canvas.getContext("2d");
+            let canvasHeightY = canvas.height / 2;
+            let canvasWidthX = canvas.width / 2;
+            
+            ctx.fillStyle = fillColor;
+            ctx.lineWidth = sizeLine;
+            ctx.strokeStyle = strokeColor;
+            
+            ctx.beginPath();
+            ctx.arc(canvasWidthX, canvasHeightY, circleRadius, 0, 2 *Math.PI);
+            ctx.fill();
+            ctx.stroke();
+            
+            return;
+        }
+
+    //Places numbers around dartboard    
+    function NumberPlacer(numberColor, canvasName)
+        { 
+            let canvas = document.getElementById(canvasName);
+            let ctx = canvas.getContext("2d");
+            let canvasHeightY = canvas.height / 2;
+            let canvasWidthX = canvas.width / 2;
+            let baseSize = Math.min(canvasHeightY, canvasWidthX);
+            // change number to anything greater than 17(segments of dartboard)
+            let segmentSize = baseSize/18;
+            
+            //Dart number pattren, starting from 6 going counterclockwise
+            let dartArray = ['6', '13', '4', '18', '1', '20', '5', '12', '9', '14', '11', '8', '16', '7', '19', '3', '17', '2', '15', '10'];
+            
+            let x,y;
+            let spacer = 0;
+            let dartFont = baseSize / 10 + 'px Trebuchet MS';
+            let textDisplace = ctx.measureText(dartArray[Math.abs(spacer)]);
+            let angleMid = (spacer) * Math.PI/10;
+    
+            ctx.font = dartFont;
+            ctx.fillStyle = numberColor;
+
+            for(spacer ;spacer > -20; spacer--)
+            {
+                textDisplace = ctx.measureText(dartArray[Math.abs(spacer)]);
+                
+                ctx.beginPath();
+                ctx.moveTo(baseSize, baseSize);
+
+                //Sets x and y with bounding box adjustments
+                x = canvasWidthX + (segmentSize * 15.5) * Math.cos(spacer * Math.PI/10);
+                y = canvasHeightY + (segmentSize * 15.5) * Math.sin(spacer * Math.PI/10);
+
+                ctx.fillText(dartArray[Math.abs(spacer)], x - (textDisplace.width / 2), y + (textDisplace.actualBoundingBoxAscent / 2));   
+            }
+
+            return;
+        }
+
+    //Builds a dartboard on given canvas    
+    function Dartboard(canvasName)
+        {
+            let canvas = document.getElementById(canvasName);
+            let ctx = canvas.getContext("2d");
+            let canvasHeightY = canvas.height / 2;
+            let canvasWidthX = canvas.width / 2;
+            let baseSize = Math.min(canvasHeightY, canvasWidthX);
+            // change number to anything greater than 17(segments of dartboard)
+            let segmentSize = baseSize/18;
+            
+            let lineColor = 'Aqua';
+            let lineSize = baseSize/140;
+            
+            Circles('black', lineColor, lineSize, segmentSize * 17, canvasName);
+
+            Wedges('Red', lineColor, lineSize, -.5, segmentSize * 14, canvasName);
+            Wedges('green', lineColor, lineSize, .5, segmentSize * 14, canvasName);
+
+            Wedges('black', lineColor, lineSize, -.5, segmentSize * 13, canvasName);
+            Wedges('cornsilk', lineColor, lineSize, .5, segmentSize * 13, canvasName);
+
+            Wedges('Red', lineColor, lineSize, -.5, segmentSize * 8, canvasName);
+            Wedges('green', lineColor, lineSize, .5, segmentSize * 8, canvasName);
+
+            Wedges('black', lineColor, lineSize, -.5, segmentSize * 7, canvasName);
+            Wedges('cornsilk', lineColor, lineSize, .5, segmentSize * 7, canvasName);
+
+            Circles('green', lineColor, lineSize, segmentSize * 2, canvasName);
+            Circles('red', lineColor, lineSize, segmentSize * 1, canvasName);
+            
+            NumberPlacer('White', canvasName);
+            
+            return;
+        }                            

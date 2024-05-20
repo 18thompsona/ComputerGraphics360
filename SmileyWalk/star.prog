@@ -1,0 +1,111 @@
+'use strict'
+
+class Star
+{
+        
+    x = 0;
+    y = 0;
+    theta = 0;
+    strokeColor = 'black';
+    fillColor = 'yellow';
+    scaleValue = 1;
+    scaleDelta = .1;
+    spinAmount = .5;
+
+    constructor()
+    { 
+    }
+    
+    set strokeColor(newColor)
+    {
+        this.strokeColor = newColor;
+    }
+
+    set fillColor(newColor)
+    {
+        this.fillColor = newColor;
+    }
+
+    set Positionx(newx)
+    {
+        this.x = newx;
+    }
+
+    set PositionY(newY)
+    {
+        this.Y = newY;
+    }
+    
+    set ScaleValue(newScale)
+    {
+        this.scaleValue = newScale;
+    }
+
+    set SpinAmount(newSpin)
+    {
+        this.SpinAmount = newSpin;
+    }
+
+    Right()
+    {
+        this.theta--;
+    }
+
+    Left()
+    {
+        this.theta++;
+    }
+
+    Display(ctx)
+    {
+        ctx.save();
+        ctx.translate(this.x,this.y);
+        ctx.rotate(this.theta*CF);
+        ctx.scale(this.scaleValue, this.scaleValue);
+        ctx.strokeStyle = this.strokeColor;
+        ctx.fillStyle = this.fillColor;
+        ctx.lineWidth = 1.5;
+        
+        let sides=[0,2,4,1,3,0,2];
+        let i, hx, hy, r = 10;
+        let b = Math.PI/2;
+        let a = 2*Math.PI/5;
+        
+        let sx = r*Math.cos(b);
+        let sy = r*Math.sin(b);
+        
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        
+        //Draws Star
+        for(i = 1; i <= 7; i++)
+        {
+            let s = sides[i];
+            hx = r*Math.cos(s*a + b);
+            hy = r*Math.sin(s*a + b);
+            
+            ctx.lineTo(hx,hy)
+        }
+        
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.restore();
+    }
+
+    Next()
+    {
+        this.theta = (this.theta + this.spinAmount) % 360;
+        
+        if (this.scaleValue >= 2)
+        {
+            this.scaleDelta = -.01;
+        }
+        else if (this.scaleValue <= 1)
+        {
+            this.scaleDelta = .01;    
+        }
+        
+        this.scaleValue += this.scaleDelta;
+    }
+}

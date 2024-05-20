@@ -1,0 +1,36 @@
+<html>
+<head>
+</head>
+<body>
+    <h1>Sprite Stroll Documentation</h1>
+    <ul>Alexander Thompson</ul>
+    <ul>CSCI-360</ul>
+    <ul>HW#3</ul>
+    <p>A Simple walking game played with in a html canvas. The goal is simple, get as many crowns or goblets as you like while avoiding the random walls as well as the blue guard enemy that starts next to the exit. When you feel you have enough simply head to the exit. If the emeny touches you then you will lose a treasure type of the other. He is sticky so you may lose more than just one treasure pile! He's not very smart though so you should be able to avoid him easily. To end the game walk into the colored square in the bottom right corner.</a>
+    
+    <p>To use this its as simple as including the scripts. Then call Setup() with the given canvas to display the game on. You will need to include buttons to be clicked to indicate the movement. Tie the function begin movement to the press, the arguments will dictate the moved direction. Only use numbers -1, 0, 1. Useing other may result in bugs and bad collision.
+    </p>
+    
+    <p>Problems I had with this code were mostly from the collision and some display issues. When putting in my treasures I forgot to make sure the images were loaded before displaying them. It took me a bit to figure out why on some loads they would show but other times they wouldn't. The collision was the real headache. After playing around with walls file I began to learn how to use it properly. I had an unrefined holder set up to handle the wall collision. However. occasionally my character would still end up with there spears in the wall and remove part of the drawn image. To fix this I tweaked the values to learn their correlation with the speed increases. I was then able to export the same collision methods to the other files get them to work and detect other elements on the gird. Treasure placement cause a stir when implemented due to them being placed in the wall for a spit second before removed and replaced else where but this did require the walls to be redrawn more often. </p>
+    
+    <p>This code is not perfect in efficency as I would like. Im sure with some time I could move functions and methods into a namespace style file to increase code reuseablity. This code could also use better scaling options and customization for the player to adjust the difficuly.
+    
+    <p>All assets used in this program where sourced from <a href='https://opengameart.org/'> opengameart.org</a>. Here is the page for the  <a href='//https://opengameart.org/content/fantasy-rpg-npcs'>Characters</a>.
+    Here is the page for the <a href='//https://opengameart.org/content/gold-treasure-icons-16x16'> Treasures</a>.
+    </p>
+    
+    <p> All code was taken pror derived from Professor Bennett at Edinboro University or made by myself.
+        
+    </p>
+    <a href='Sprite.html'> Link to Html </a>
+    <p></p>
+    <a href='SpriteScene.prog'> Link to Code For The Scene </a>
+    <p></p>
+    <a href='Sprite.prog'> Link to Code For The Sprite </a>
+    <p></p>
+    <a href='Walls.prog'> Link to Code For The Walls</a>
+    <p></p>
+    <a href='Treasure.prog'> Link to Code For the Treasure</a>
+   
+</body>
+</html>

@@ -1,0 +1,35 @@
+<html>
+<head>
+    <script type="text/javascript" src="Sprite.prog"></script>
+    <script type="text/javascript" src="SpriteScene.prog"></script>
+    <script type="text/javascript" src="Walls.prog"></script>
+    <script type="text/javascript" src="Treasure.prog"></script>
+    
+</head>
+<body>
+    <canvas id="sprite" width = "700" height="700" style="border: 2px solid #000000;"></canvas>
+    
+    <script>
+        Setup('sprite');
+    </script>
+    
+    <table>
+        <tr>
+        <td> <button type="button" onclick="StartMove(-1,-1,'sprite')"> ^< </button></td>
+        <td> <button type="button" onclick="StartMove(0,-1,'sprite')"> ^ </button></td>
+        <td> <button type="button" onclick="StartMove(1,-1,'sprite')"> >^ </button></td>
+        </tr>
+        
+        <tr>
+        <td> <button type="button" onclick="StartMove(-1,0,'sprite')"> < </button></td>
+        <td> <button type="button" onclick="StartMove(0,0,'sprite')"> 0 </button></td>
+        <td> <button type="button" onclick="StartMove(1,0,'sprite')"> > </button></td>
+        </tr>
+        
+        <tr>
+        <td> <button type="button" onclick="StartMove(-1,1,'sprite')"> v< </button></td>
+        <td> <button type="button" onclick="StartMove(0,1,'sprite')"> v </button></td>
+        <td> <button type="button" onclick="StartMove(1,1,'sprite')"> >v </button></td> 
+    
+</body>
+</html>

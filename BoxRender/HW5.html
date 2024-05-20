@@ -1,0 +1,64 @@
+<html>
+<head>
+
+<script id="vertex-shader" type="x-shader/x-vertex" >
+
+    attribute vec4 vPosition;
+
+    void main() 
+    {
+        float d = 0.2;
+
+        // translate matrix 
+        // note the matrix appears to be transposed, it is not.
+        //     GLSL is column major, not row major
+        mat4 translate = mat4
+        (
+            vec4(1.0, 0.0, 0.0, 0.0),  // first column
+            vec4(0.0, 1.0, 0.0, 0.0),  // second column
+            vec4(0.0, 0.0, 1.0, 0.0),  // third column
+            vec4(0.0, 0.25, 0.75, 1.0) // last column
+        );
+        
+        // pinhole camera projection matrix.
+        mat4 project = mat4
+        (
+            vec4(1.0, 0.0, 0.0, 0.0),
+            vec4(0.0, 1.0, 0.0, 0.0),
+            vec4(0.0, 0.0, 0.0, 1.0/d),
+            vec4(0.0, 0.0, 0.0, 0.0)
+        );
+
+        // apply the transformations
+        gl_Position = project * translate *  vPosition;
+    } 
+
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+    void main()
+    {
+        gl_FragColor = vec4 (1.0, 0.0, 1.0, 1.0);
+    } 
+    
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+
+<script type="text/javascript" src="Widget.js"></script>
+<script type="text/javascript" src="Program.js"></script>
+<script type="text/javascript" src="GLCanvas.js"></script>
+
+<body>
+<script>
+    'use strict'
+    var canvas = new Canvas(500,500,Keypress,"vertex-shader","fragment-shader");
+    var Objects = [];
+
+    MakeItems();
+    Display();
+</script>
+</body>
